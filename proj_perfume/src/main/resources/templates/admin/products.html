@@ -61,7 +61,7 @@
 							</tr>
 						</thead>
 						<tbody>
-							<tr th:each="p,c:${products}">
+							<tr th:each="p,c:${products}" th:id="'product-row-'+${p.id}">
 								<th scope="row">[[${c.count}]]</th>
 								<td><img th:src="@{'/img/product_img/'+${p.image}}"
 									width="70px" height="70px"></td>
@@ -74,17 +74,21 @@
 								<td>[[${p.stock}]]</td>
 								<td><a th:href="@{'/admin/editProduct/'+${p.id}}"
 									class="btn btn-sm btn-primary"><i
-										class="fa-solid fa-pen-to-square"></i>Edit</a> <a
-									th:href="@{'/admin/deleteProduct/'+${p.id}}"
-									class="btn btn-sm btn-danger"><i class="fa-solid fa-trash"></i>
-										Delete</a></td>
+										class="fa-solid fa-pen-to-square"></i>Edit</a> <button type="button"
+                                             class="btn btn-sm btn-danger delete-product-btn"
+                                           th:attr="data-id=${p.id}"
+                                              th:id="'product-row-btn-'+${p.id}">
+                                              <i class="fa-solid fa-trash"></i> Delete
+                                                  </button></td>
 							</tr>
 
 						</tbody>
 					</table>
 
 					<div class="row">
-						<div class="col-md-4">Total Product : [[${totalElements}]]</div>
+						<div class="col-md-4">
+							Total Product : <span id="totalProductCount">[[${totalElements}]]</span>
+						</div>
 						<div class="col-md-6">
 
 							<nav aria-label="Page navigation example">

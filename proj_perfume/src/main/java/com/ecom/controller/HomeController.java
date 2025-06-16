@@ -8,7 +8,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.security.Principal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Collector;
@@ -25,6 +27,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.ecom.model.Category;
@@ -139,36 +142,40 @@ public class HomeController {
 	}
 
 	@PostMapping("/saveUser")
-	public String saveUser(@ModelAttribute UserDtls user, @RequestParam("img") MultipartFile file, HttpSession session)
-			throws IOException {
+@ResponseBody
+public Map<String, Object> saveUserAjax(@ModelAttribute UserDtls user, @RequestParam("img") MultipartFile file, HttpSession session)
+        throws IOException {
+    Map<String, Object> result = new HashMap<>();
+    Boolean existsEmail = userService.existsEmail(user.getEmail());
 
-		Boolean existsEmail = userService.existsEmail(user.getEmail());
+    if (existsEmail) {
+        result.put("success", false);
+        result.put("message", "Email already exists");
+    } else {
+        String imageName = file.isEmpty() ? "default.jpg" : file.getOriginalFilename();
+        user.setProfileImage(imageName);
+        UserDtls saveUser = userService.saveUser(user);
 
-		if (existsEmail) {
-			session.setAttribute("errorMsg", "Email already exist");
-		} else {
-			String imageName = file.isEmpty() ? "default.jpg" : file.getOriginalFilename();
-			user.setProfileImage(imageName);
-			UserDtls saveUser = userService.saveUser(user);
-
-			if (!ObjectUtils.isEmpty(saveUser)) {
-				if (!file.isEmpty()) {
-					File saveFile = new ClassPathResource("static/img").getFile();
-
-					Path path = Paths.get(saveFile.getAbsolutePath() + File.separator + "profile_img" + File.separator
-							+ file.getOriginalFilename());
-
-//					System.out.println(path);
-					Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
-				}
-				session.setAttribute("succMsg", "Register successfully");
-			} else {
-				session.setAttribute("errorMsg", "something wrong on server");
-			}
-		}
-
-		return "redirect:/register";
-	}
+        if (!ObjectUtils.isEmpty(saveUser)) {
+            if (!file.isEmpty()) {
+    // Lấy đường dẫn tuyệt đối đến thư mục static/img/profile_img trong source
+    String uploadDir = System.getProperty("user.dir") + "/src/main/resources/static/img/profile_img";
+    File dir = new File(uploadDir);
+    if (!dir.exists()) {
+        dir.mkdirs(); // Tạo thư mục nếu chưa có
+    }
+    Path path = Paths.get(uploadDir, file.getOriginalFilename());
+    Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
+}
+            result.put("success", true);
+            result.put("message", "Register successfully");
+        } else {
+            result.put("success", false);
+            result.put("message", "Something went wrong on server");
+        }
+    }
+    return result;
+}
 
 //	Forgot Password Code 
 

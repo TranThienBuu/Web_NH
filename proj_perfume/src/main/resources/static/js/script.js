@@ -118,8 +118,35 @@ $(function(){
 			}
 		}
 	})
-	
-	
+ $('#userRegister').off('submit').on('submit', function(e) {
+        e.preventDefault();
+        var $form = $(this);
+        if (!$form.valid()) return;
+
+        var $btn = $form.find('button[type="submit"]');
+        $btn.prop('disabled', true);
+
+        var formData = new FormData(this);
+
+        $.ajax({
+            url: '/saveUser',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                alert(response.message || 'Đăng ký thành công!');
+                if(response.success) {
+                    $form[0].reset();
+                }
+                $btn.prop('disabled', false);
+            },
+            error: function(xhr) {
+                alert('Đăng ký thất bại! ' + (xhr.responseText || ''));
+                $btn.prop('disabled', false);
+            }
+        });
+    });
 // Orders Validation
 
 var $orders=$("#orders");
@@ -224,6 +251,103 @@ $orders.validate({
 		}	
 })
 
+// AJAX add product
+$('#addProductForm').submit(function(e) {
+    e.preventDefault();
+    var formData = new FormData(this);
+    $.ajax({
+        url: '/admin/saveProductAjax', // endpoint backend trả về JSON
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function(response) {
+            alert(response.message);
+            if(response.success) {
+                $('#addProductForm')[0].reset();
+            }
+        },
+        error: function(xhr) {
+            alert('Đã có lỗi xảy ra khi thêm sản phẩm!');
+        }
+    });
+});
+
+
+    // AJAX delete product
+    $('.delete-product-btn').click(function() {
+        var id = $(this).data('id');
+        if(confirm('Bạn chắc chắn muốn xóa sản phẩm này?')) {
+            $.post('/admin/deleteProductAjax', {id: id}, function(response) {
+                alert(response.message);
+                if(response.success) {
+                    $('#product-row-' + id).remove();
+                }
+            }).fail(function() {
+                alert('Đã có lỗi xảy ra khi xóa sản phẩm!');
+            });
+        }
+    });
+
+	$('.delete-product-btn').click(function() {
+    var id = $(this).data('id');
+    if(confirm('Bạn chắc chắn muốn xóa sản phẩm này?')) {
+        $.post('/admin/deleteProductAjax', {id: id}, function(response) {
+            alert(response.message);
+            if(response.success) {
+                $('#product-row-' + id).remove();
+                // Cập nhật lại tổng số sản phẩm
+                var $count = $('#totalProductCount');
+                var newCount = parseInt($count.text()) - 1;
+                $count.text(newCount);
+            }
+        }).fail(function() {
+            alert('Đã có lỗi xảy ra khi xóa sản phẩm!');
+        });
+    }
+});
+
+// AJAX thêm category
+$('#addCategoryForm').submit(function(e) {
+    e.preventDefault();
+    var formData = new FormData(this);
+    $.ajax({
+        url: '/admin/saveCategoryAjax',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function(response) {
+            if(response.success && response.category) {
+                alert('Thêm category thành công!');
+                $('#addCategoryForm')[0].reset();
+
+                // Thêm dòng mới vào bảng category
+                var c = response.category;
+                var status = c.isActive ? 'Active' : 'Inactive';
+                var rowCount = $('#categoryTableBody tr').length + 1;
+                var newRow = `
+                    <tr id="category-row-${c.id}">
+                        <td>${rowCount}</td>
+                        <td>${c.name}</td>
+                        <td><img src="/img/category_img/${c.imageName}" width="50"></td>
+                        <td>${status}</td>
+                        <!-- Thêm các cột action nếu cần -->
+                    </tr>
+                `;
+                $('#categoryTableBody').append(newRow);
+
+            } else {
+                alert(response.message || 'Thêm category thất bại!');
+            }
+        },
+        error: function(xhr) {
+            alert('Đã có lỗi xảy ra khi thêm category!\n' + xhr.responseText);
+        }
+    });
+});
+
+ 
 // Reset Password Validation
 
 var $resetPassword=$("#resetPassword");
@@ -257,12 +381,7 @@ $resetPassword.validate({
 			}
 		}	
 })
-
-
-
-	
-	
-	
+		
 	
 })
 

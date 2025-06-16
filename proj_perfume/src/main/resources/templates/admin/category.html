@@ -25,8 +25,7 @@
 
 						</div>
 						<div class="card-body">
-							<form action="/admin/saveCategory" method="post"
-								enctype="multipart/form-data">
+							<form id="addCategoryForm" enctype="multipart/form-data">
 								<div class="mb-3">
 									<label>Enter Category</label> <input type="text" name="name"
 										class="form-control">
@@ -74,28 +73,26 @@
 										<th scope="col">Action</th>
 									</tr>
 								</thead>
-								<tbody>
-									<tr th:each="cat,c:${categorys}">
-										<th scope="row">[[${c.count}]]</th>
-										<td>[[${cat.name}]]</td>
-										<td>[[${cat.isActive}]]</td>
-										<td><img
-											th:src="@{'/img/category_img/'+${cat.imageName}}"
-											width="50px" height="50px"></td>
-										<td><a th:href="@{'/admin/loadEditCategory/'+${cat.id}}"
-											class="btn btn-primary btn-sm"><i
-												class="fa-solid fa-pen-to-square  fa-1x"></i> Edit </a> <a
-											th:href="@{'/admin/deleteCategory/'+${cat.id}}"
-											class="btn btn-danger btn-sm"><i
-												class="fa-solid fa-trash  fa-1x"></i>Delete</a></td>
-									</tr>
-
-								</tbody>
+<tbody id="categoryTableBody">
+    <tr th:each="cat,c:${categorys}">
+        <th scope="row">[[${c.count}]]</th>
+        <td>[[${cat.name}]]</td>
+        <td>[[${cat.isActive}]]</td>
+        <td><img th:src="@{'/img/category_img/'+${cat.imageName}}" width="50px" height="50px"></td>
+        <td>
+            <a th:href="@{'/admin/loadEditCategory/'+${cat.id}}" class="btn btn-primary btn-sm">
+                <i class="fa-solid fa-pen-to-square  fa-1x"></i> Edit
+            </a>
+            <a th:href="@{'/admin/deleteCategory/'+${cat.id}}" class="btn btn-danger btn-sm">
+                <i class="fa-solid fa-trash  fa-1x"></i>Delete
+            </a>
+        </td>
+    </tr>
+</tbody>
 							</table>
 
 							<div class="row">
-								<div class="col-md-4">Total Category :
-									[[${totalElements}]]</div>
+								<div class="col-md-4">Total Category : <span id="totalCategoryCount">[[${totalElements}]]</span></div>
 								<div class="col-md-6">
 
 									<nav aria-label="Page navigation example">
